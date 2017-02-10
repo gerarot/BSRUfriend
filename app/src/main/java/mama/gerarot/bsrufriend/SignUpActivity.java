@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +21,10 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.jibble.simpleftp.SimpleFTP;
+
+import java.io.File;
+
 public class SignUpActivity extends AppCompatActivity {
 
     //Explicit การประกาศตัวแปร
@@ -30,6 +35,7 @@ public class SignUpActivity extends AppCompatActivity {
     private String nameString, userString, passString, pathImageString, nameImageString;
     private Uri uri;
     private boolean aBoolean = true;
+    private int anInt = 0;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -50,10 +56,38 @@ public class SignUpActivity extends AppCompatActivity {
         // Image Controller
         imagecontroller();
 
+        //Radio Controller
+        radiocontroller();
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }   //Main Method
+
+    private void radiocontroller() {
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.radioButton5:
+                        anInt = 0;
+                        break;
+                    case R.id.radioButton4:
+                        anInt = 1;
+                        break;
+                    case R.id.radioButton3:
+                        anInt = 2;
+                        break;
+                    case R.id.radioButton2:
+                        anInt = 3;
+                        break;
+                    case R.id.radioButton:
+                        anInt = 4;
+                        break;
+                }   //switch
+            }   //OnCheckeChange
+        });
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -119,10 +153,58 @@ public class SignUpActivity extends AppCompatActivity {
                     myAlert.myDialog("กรุณาใส่รูปภาพ", "มึงเลือกรูปสิวะโธ่โง่แท้");
                 } else {
                     // EverThing OK
+
+                    uploadValueToServer();
+
                 }   //onClick
             }   //onClick
         });
     }   // buttonController
+
+    private void uploadValueToServer() {
+        try {
+
+            //Upload Image
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy
+                    .Builder()
+                    .permitAll()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+            SimpleFTP simpleFTP = new SimpleFTP();
+            simpleFTP.connect("ftp.swiftcodingthai.com", 21, "bsru@swiftcodingthai.com",
+                    "Abc12345");
+            simpleFTP.bin();
+            simpleFTP.cwd("Image_Art");
+            simpleFTP.stor(new File(pathImageString));
+            simpleFTP.disconnect();
+            //Upload Text
+            String tag = "10febV2";
+            Log.d(tag, "Name ==>" + nameString);
+            Log.d(tag, "user ==>" + userString);
+            Log.d(tag, "Password ==>" + passString);
+
+            nameString = "http://swiftcodingthai.com/bsru/Image_Art" + pathImageString.substring(pathImageString.lastIndexOf("/"));
+            Log.d(tag, "Image ==>" + nameString);
+            Log.d(tag, "Avata ==>" + anInt);
+
+            AddValueToUser addValueToUser = new AddValueToUser(SignUpActivity.this,nameString,
+                    userString, passString, nameImageString, Integer.toString(anInt));
+            addValueToUser.execute("http://swiftcodingthai.com/bsru/add_master.php");
+            String s = addValueToUser.get();
+            Log.d(tag, "Result ==>" + s);
+
+            if (Boolean.parseBoolean(s)) {
+                finish();
+            } else {
+                MyAlert myAlert = new MyAlert(SignUpActivity.this);
+                myAlert.myDialog("Connot Upload", "Upload Fal");
+            }
+
+
+        } catch (Exception e) {
+            Log.d("10febV1", "e upload ==>" + e.toString());
+        }
+    }   //upload
 
     private void bindwidget() {
         nameEditText = (EditText) findViewById(R.id.editText);
