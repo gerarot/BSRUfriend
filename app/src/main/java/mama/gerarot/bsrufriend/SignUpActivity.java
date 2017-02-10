@@ -1,5 +1,9 @@
 package mama.gerarot.bsrufriend;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +20,8 @@ public class SignUpActivity extends AppCompatActivity {
     private RadioGroup radioGroup;
     private Button button;
     private String nameString, userString, passString;
+    private Uri uri;
+    private boolean aBoolean = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +34,40 @@ public class SignUpActivity extends AppCompatActivity {
         // Button Controller
         bottoncontroller();
 
+        // Image Controller
+        imagecontroller();
+
     }   //Main Method
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            aBoolean = false;
+            uri = data.getData();
+            // Setup Image Choose to ImageView
+            try {
+                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+                imageView.setImageBitmap(bitmap);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }   //if
+
+    }   //onActivityResult
+
+    private void imagecontroller() {
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(intent.createChooser(intent, "โปรเลือกแอพดูภาพ"), 1);
+            }   //onclick
+        });
+    }
 
     private void bottoncontroller() {
         button.setOnClickListener(new View.OnClickListener() {
@@ -44,7 +83,13 @@ public class SignUpActivity extends AppCompatActivity {
                     //True ==> Have Space
                     MyAlert myAlert = new MyAlert(SignUpActivity.this);
                     myAlert.myDialog("มีช่องว่าง","กรุณากรอกให้ครบทุกช่องเว้ย");
-                }
+                } else if (aBoolean) {
+                    // Non Choose Image
+                    MyAlert myAlert = new MyAlert(SignUpActivity.this);
+                    myAlert.myDialog("กรุณาใส่รูปภาพ","มึงเลือกรูปสิวะโธ่โง่แท้");
+                } else {
+                    // EverThing OK
+                }   //onClick
             }   //onClick
         });
     }   // buttonController
