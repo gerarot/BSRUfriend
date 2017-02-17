@@ -37,7 +37,7 @@ public class EditLatLng extends AsyncTask<String, Void, String>{
                     .add("isAdd", "true")
                     .add("id", idString)
                     .add("Lat", params[0])
-                    .add("Lng", params[0])
+                    .add("Lng", params[1])
                     .build();
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(urlPHP).post(requestBody).build();

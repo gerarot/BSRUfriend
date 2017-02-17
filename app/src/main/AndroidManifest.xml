@@ -48,7 +48,8 @@
 
         <activity
             android:name=".SrevieceActivity"
-            android:label="@string/title_activity_sreviece"></activity>
+            android:label="@string/title_activity_sreviece" />
+        <activity android:name=".ListFriend"></activity>
     </application>
 
 </manifest>
